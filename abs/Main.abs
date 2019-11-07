@@ -1,0 +1,86 @@
+module Main;
+import * from UserService;
+import * from OrderService;
+import * from EncryptionService;
+import * from PaymentService;
+import * from Network;
+
+interface Main {
+
+    Unit start();
+  
+}
+
+class MainImpl implements Main {
+  
+    Network network;
+
+    Unit start() {
+        Int ticketsToOrder = 100;
+
+        // Set up all the databases and microservices
+        println("Setting up databases and services");
+        TicketDatabase ticketDb = new local TicketDatabaseImpl(350000);
+        OrderService orderService = new local OrderServiceImpl(ticketDb, 350000);
+        UserDatabase userDb = new local UserDatabaseImpl();
+        UserService userService = new local UserServiceImpl(userDb, 1); // also seed the db (create default users)
+        PaymentService paymentService = new local PaymentServiceImpl();
+        KeyDatabase keyDatabase = new local KeyDatabaseImpl();
+        EncryptionService encryptionService = new local EncryptionServiceImpl(keyDatabase, list["UserService", "OrderService", "PaymentService"]);
+      
+        // Set up the "Network"
+        network = new local NetworkImpl(userService, orderService, encryptionService, paymentService);
+        network.initialize();
+
+        // Make sure everything is set up before we start making requests
+        await duration(1, 1);
+    
+        // Order a new ticket for each user in an interval of one second
+        println(`Ordering $ticketsToOrder$ tickets at the same time`);
+        String username = "User1";
+        String token = "Token of " + username;
+        Int i = 0;
+        while (i < ticketsToOrder) {
+            HttpRequest request = new local HttpRequestImpl("OrderService", "purchaseTicket", map[Pair("username", username), Pair("token", token)]);
+            network!sendRequest(request);
+            i = i + 1;
+        }
+
+        Bool isDone = orderService.isDone();
+        while (!isDone) {
+            await duration(1, 1);
+            isDone = orderService.isDone();
+        }
+
+        // Postprocessing: show some statistics
+        List<Float> responseTimes = orderService.getResponseTimes();
+        Float shortestTime = head(responseTimes);
+        Float longestTime = head(responseTimes);
+        Float allTime = 0.0;
+        
+        foreach (responseTime in responseTimes) {
+            if (responseTime < shortestTime) {
+                shortestTime = responseTime;
+            }
+            if (responseTime > longestTime) {
+                longestTime = responseTime;
+            }
+            allTime = allTime + responseTime;
+        }
+        Int avgTime = truncate(ceil(allTime) / length(responseTimes));
+
+        Int highestAmountOfReplicas = orderService.getHighestAmountOfReplicas();
+        
+        println("\nResults:");
+        println("Shortest response time:\t " + `$shortestTime$ms`);
+        println("Longest response time:\t " + `$longestTime$ms`);
+        println("Average response time:\t " + `$avgTime$ms`);   
+        println("Maximum amount of replicas of the Order Service: " + `$highestAmountOfReplicas$`);   
+    }
+
+}
+
+{
+    Main main = new local MainImpl();
+    main.start();
+}

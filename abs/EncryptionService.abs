@@ -1,0 +1,61 @@
+module EncryptionService;
+import * from Network;
+import * from Service;
+export *;
+
+interface KeyDatabase {
+  
+    Unit createKey(String service, String key);
+    String getKey(String service);
+
+}
+
+interface EncryptionService extends Service {
+
+    HttpResponse getKeys(List<String> services);
+
+}
+
+class KeyDatabaseImpl implements KeyDatabase {
+  
+    Map<String, String> keys = map[];
+
+    Unit createKey(String service, String key) {
+        keys = insert(keys, Pair(service, key));
+    }
+
+    String getKey(String service) {
+        await duration(1, 1);
+        return lookupDefault(keys, service, "");
+    }
+  
+}
+
+class EncryptionServiceImpl(KeyDatabase db, List<String> services) implements EncryptionService {
+  
+    Network network = null;
+
+    Unit run() {
+        println("Seeding key database with key for each service");
+        foreach (service in services) {
+            db.createKey(service, service + "Key");
+        }
+    }
+
+    Unit connectToNetwork(Network newNetwork) {
+        network = newNetwork;
+    }
+
+    HttpResponse getKeys(List<String> services) {
+        List<String> keys = list[];
+
+        foreach (service in services) {
+            String key = db.getKey(service);
+            keys = appendright(keys, key);
+        }
+        
+        await duration(1, 1);
+        return new local HttpResponseImpl(map[Pair("keys", toString(keys))]);
+    }
+  
+}

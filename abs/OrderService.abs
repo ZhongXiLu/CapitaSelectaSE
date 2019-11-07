@@ -1,0 +1,168 @@
+module OrderService;
+import * from Network;
+import * from Service;
+export *;
+
+interface TicketDatabase {
+  
+    Int ticketsLeft();
+    Unit createTicket(Int ticket);
+
+}
+
+interface OrderService extends Service {
+
+    Unit purchaseTicket(HttpRequest request);
+
+    Unit processRequest(HttpRequest request);
+    List<Float> getResponseTimes();
+    Bool isDone();
+    Int getHighestAmountOfReplicas();
+
+}
+
+class TicketDatabaseImpl(Int ticketsLeft) implements TicketDatabase {
+  
+    List<Int> tickets = list[];
+
+    Int ticketsLeft() {
+        await duration(1, 1);
+        return ticketsLeft;
+    }
+  
+    Unit createTicket(Int ticket) {
+        ticketsLeft = ticketsLeft - 1;
+        tickets = appendright(tickets, ticket);
+        
+        await duration(2, 2);
+    }
+  
+}
+
+class OrderServiceImpl(TicketDatabase db, Int ticketsLeft) implements OrderService {
+  
+    Network network = null;
+    Int maxReplicas = 10;     // represent the amount of "replicas" for this microservice
+    Int replicasWorking = 0;
+    Int highestAmountOfReplicas = maxReplicas;
+    Int dbReplicas = ceil(float(ticketsLeft / 1000));     // represent the amount of shards or tables (see database sharding)
+
+    List<HttpRequest> requests = list[];
+    Bool receivedRequest = False;
+    List<Float> responseTimes = list[];     // keep some stats for later
+
+    Int processedRequests = 0;
+
+    Unit connectToNetwork(Network newNetwork) {
+        network = newNetwork;
+    }
+
+    Unit run() {
+        Bool isDone = False;
+        while (!isDone) {
+            // Adjust amount of replicas (this is eventually handled by Kubernetes, but is not implemented here)
+            maxReplicas = ceil(float(length(requests) / 10));  // desired load = 10 requests/replica
+            if (maxReplicas < 10) {
+                maxReplicas = 10;    // make sure there's at least 10 instance available at all time
+            }
+            if (maxReplicas > highestAmountOfReplicas) {
+                highestAmountOfReplicas = maxReplicas;
+            }
+
+            // Check if we can process a request
+            while (replicasWorking <= maxReplicas && length(requests) > 0) {
+                replicasWorking = replicasWorking + 1;
+                HttpRequest request = head(requests);
+                requests = without(requests, request);
+                this!processRequest(request);
+            }
+
+            // Check if we have reached end of simulation
+            isDone = this.isDone();
+
+            await duration(1, 1);
+        }
+    }
+
+    Unit purchaseTicket(HttpRequest request) {
+        receivedRequest = True;
+        requests = appendright(requests, request);
+    }
+        
+    Unit processRequest(HttpRequest request) {
+        Bool success = False;
+        
+        Map<String, String> parameters = request.getParameters();
+        String username = lookupUnsafe(parameters, "username");
+        String token = lookupUnsafe(parameters, "token");
+        
+        // (1) Get key(s) to communicate with other services
+        {
+            HttpRequest request2 = new local HttpRequestImpl("EncryptionService", "getKeys", map[Pair("", "UserService"), Pair("", "PaymentService")]);
+            HttpResponse response = network.sendRequest(request2);
+            Map<String, String> parameters2 = response.getParameters();
+            String keys = lookupUnsafe(parameters2, "keys");
+            // TODO: store keys and encrypt future messages
+        }
+
+        // (2) Verify user
+        String isVerified = "False";
+        {
+            HttpRequest request2 = new local HttpRequestImpl("UserService", "verifyUser", map[Pair("username", username), Pair("token", token)]);
+            HttpResponse response = network.sendRequest(request2);
+            Map<String, String> parameters2 = response.getParameters();
+            isVerified = lookupUnsafe(parameters2, "success");
+        }
+        
+        if (isVerified == "True") {
+            // (3) Create a new ticket if there are any left
+            await dbReplicas > 0;
+            dbReplicas = dbReplicas - 1;
+
+            Int ticketsLeft = db.ticketsLeft();
+            if (ticketsLeft > 0) {
+
+                // (4) Check if user has a sufficient balance
+                String transactionSuccessful = "True";
+                {
+                    HttpRequest request2 = new local HttpRequestImpl("PaymentService", "createPayment", map[Pair("cardType", "Visa"), Pair("username", username), Pair("amount", "100")]);
+                    HttpResponse response = network.sendRequest(request2);
+                    Map<String, String> parameters2 = response.getParameters();
+                    transactionSuccessful = lookupUnsafe(parameters2, "success");
+                }
+
+                if (transactionSuccessful == "True") {
+                    // (5) Everything successful => create ticket
+                    db.createTicket(random(100));
+                    success = True;
+                }
+            }
+
+            dbReplicas = dbReplicas + 1;
+        }
+      
+        Float responseTime = request.getResponseTime();
+        responseTimes = appendright(responseTimes, responseTime);
+      
+        processedRequests = processedRequests + 1;
+        if (processedRequests % 100 == 0) {
+            print("|");
+        }
+
+        replicasWorking = replicasWorking - 1;
+        //return new local HttpResponseImpl(map[Pair("success", toString(success))]);
+    }
+
+    List<Float> getResponseTimes() {
+        return responseTimes;
+    }
+
+    Bool isDone() {
+        return isEmpty(requests) && replicasWorking == 0 && receivedRequest;
+    }
+
+    Int getHighestAmountOfReplicas() {
+        return highestAmountOfReplicas;
+    }
+  
+}

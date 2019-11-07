@@ -1,0 +1,122 @@
+module Network;
+import * from UserService;
+import * from OrderService;
+import * from EncryptionService;
+import * from PaymentService;
+export *;
+
+interface HttpRequest {
+
+    String getTarget();
+    String getAction();
+    Map<String, String> getParameters();
+    Float getResponseTime();
+
+}
+
+interface HttpResponse {
+
+    Map<String, String> getParameters();
+
+}
+
+interface Network {
+
+    HttpResponse sendRequest(HttpRequest request);
+    Unit initialize();
+
+}
+
+class HttpRequestImpl(String target, String action, Map<String, String> parameters) implements HttpRequest {
+
+    Time start = now(); // Run an internal timer to keep track of the response time of a request
+
+    String getTarget() {
+        return target;
+    }
+
+    String getAction() {
+        return action;
+    }
+
+    Map<String, String> getParameters() {
+        return parameters;
+    }
+
+    Float getResponseTime() {
+        return float(timeDifference(now(), start));
+    }
+
+}
+
+class HttpResponseImpl(Map<String, String> parameters) implements HttpResponse {
+
+    Map<String, String> getParameters() {
+        return parameters;
+    }
+
+}
+
+class NetworkImpl(
+        UserService userService,
+        OrderService orderService,
+        EncryptionService encryptionService,
+        PaymentService paymentService
+    ) implements Network {
+
+    // Some constants regarding the latencies of requests (in ms)
+    [Final] Int externalRequestLatency = 150;
+    [Final] Rat internalRequestLatency = rat(0.5);
+  
+    Unit initialize() {
+        userService.connectToNetwork(this);
+        orderService.connectToNetwork(this);
+        encryptionService.connectToNetwork(this);
+        paymentService.connectToNetwork(this);
+    }
+
+    // Send a request across the "network" and get the response back
+    HttpResponse sendRequest(HttpRequest request) {
+        HttpResponse response = null;
+
+        String target = request.getTarget();
+        String action = request.getAction();
+        Map<String, String> parameters = request.getParameters();
+
+        if (target == "UserService") {
+            if (action == "registerUser") {
+                await duration(externalRequestLatency, externalRequestLatency);
+                response = userService.registerUser(lookupUnsafe(parameters, "username"));
+            } else if (action == "verifyUser") {
+                await duration(internalRequestLatency, internalRequestLatency);
+                response = userService.verifyUser(lookupUnsafe(parameters, "username"), lookupUnsafe(parameters, "token"));
+            }
+            
+        } else if (target == "OrderService") {
+            if (action == "purchaseTicket") {
+                await duration(externalRequestLatency, externalRequestLatency);
+                // Ignore response, this will save a lot of memory when running a simulation
+                orderService.purchaseTicket(request);
+            }
+        
+        } else if (target == "EncryptionService") {
+            if (action == "getKeys") {
+                await duration(internalRequestLatency, internalRequestLatency);
+                response = encryptionService.getKeys(values(parameters));
+            }
+        
+        } else if (target == "PaymentService") {
+            if (action == "createPayment") {
+                await duration(internalRequestLatency, internalRequestLatency);
+                response = paymentService.createPayment(
+                    lookupUnsafe(parameters, "cardType"),
+                    lookupUnsafe(parameters, "username"),
+                    lookupUnsafe(parameters, "amount")
+                );
+            }
+        }
+
+        return response;
+    }    
+
+}

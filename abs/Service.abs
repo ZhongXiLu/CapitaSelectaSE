@@ -1,0 +1,19 @@
+module Service;
+import * from Network;
+export *;
+
+interface Service {
+  
+    Unit connectToNetwork(Network newNetwork);
+
+}
+
+class ServiceImpl implements Service {
+  
+    Network network = null;
+  
+    Unit connectToNetwork(Network newNetwork) {
+        network = newNetwork;
+    }
+
+}

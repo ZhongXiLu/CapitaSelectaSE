@@ -1,0 +1,117 @@
+module UserService;
+import * from Network;
+import * from Service;
+export *;
+
+interface User {
+
+    Unit setToken(String newToken);
+    String getToken();
+    String getName();
+  
+}
+
+interface UserDatabase {
+  
+    Unit createUser(User user);
+    User getUser(String username);
+
+}
+
+interface UserService extends Service {
+
+    HttpResponse registerUser(String username);
+    HttpResponse verifyUser(String username, String token);
+  
+}
+
+class UserImpl(String username) implements User {
+
+    String token = "";
+  
+    Unit setToken(String newToken) {
+        token = newToken;
+    }
+  
+    String getToken() {
+        return token;  
+    }
+
+    String getName() {
+        return username;
+    }
+  
+}
+
+class UserDatabaseImpl implements UserDatabase {
+  
+    Map<String, String> users = map[];
+  
+    Unit createUser(User user) {
+        String username = user.getName();
+        String token = user.getToken();
+        users = insert(users, Pair(username, token));
+    }
+
+    User getUser(String username) {
+        User foundUser = new local UserImpl(username);
+        
+        String token = lookupDefault(users, username, "");
+        foundUser.setToken(token);
+
+        return foundUser;
+    }
+  
+}
+
+class UserServiceImpl(UserDatabase db, Int amountOfUsers) implements UserService {
+  
+    Network network = null;
+  
+    Unit run() {
+        println(`Seeding user database with $amountOfUsers$ user(s)`);
+        Int i = 0;
+        while (i < amountOfUsers) {
+            String username = "User" + toString(i);
+            this!registerUser(username);
+            i = i + 1;
+        }
+    }
+
+    Unit connectToNetwork(Network newNetwork) {
+        network = newNetwork;
+    }
+  
+    HttpResponse registerUser(String username) {
+        User user = new local UserImpl(username);
+        String token = "Token of " + username;
+        user.setToken(token);
+        db.createUser(user);
+        return new local HttpResponseImpl(map[Pair("token", token)]);
+    }
+
+    HttpResponse verifyUser(String username, String token) {
+        Bool success = True;
+      
+        User user = db.getUser(username);
+        if (user != null) {
+            String userToken = user.getToken();
+            if (userToken == token) {
+                success = True;
+            }
+        }
+
+        // Get key to communicate with other service
+        {
+            HttpRequest request = new local HttpRequestImpl("EncryptionService", "getKeys", map[Pair("", "OrderService")]);
+            HttpResponse response = network.sendRequest(request);
+            Map<String, String> parameters = response.getParameters();
+            String keys = lookupUnsafe(parameters, "keys");
+            // TODO: store keys and encrypt future message
+        }
+
+        await duration(1, 1);
+        return new local HttpResponseImpl(map[Pair("success", toString(success))]);
+    }
+
+}

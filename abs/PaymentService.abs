@@ -1,0 +1,54 @@
+module PaymentService;
+import * from Network;
+import * from Service;
+export *;
+
+interface PaymentService extends Service {
+
+    HttpResponse createPayment(String cardType, String username, String amount);
+
+}
+
+class PaymentServiceImpl implements PaymentService {
+  
+    Network network = null;
+
+    Unit connectToNetwork(Network newNetwork) {
+        network = newNetwork;
+    }
+
+    HttpResponse createPayment(String brand, String username, String amount) {
+        Bool success = False;
+
+        await duration(50, 50); // send request to external server
+        
+        // https://data.spreedly.com/
+        if (brand == "Visa") {
+            await duration(1400, 1400);
+            // Some calls to external API of Visa
+            success = True;
+
+        } else if (brand == "MasterCard") {
+            await duration(1400, 1400);
+            // Some calls to external API of MasterCard
+            success = True;
+        
+        } else if (brand == "American Express") {
+            await duration(1400, 1400);
+            // Some calls to external API of American Express
+            success = True;
+        }
+
+        // Get key to communicate with other service
+        {
+            HttpRequest request = new local HttpRequestImpl("EncryptionService", "getKeys", map[Pair("", "OrderService")]);
+            HttpResponse response = network.sendRequest(request);
+            Map<String, String> parameters = response.getParameters();
+            String keys = lookupUnsafe(parameters, "keys");
+            // TODO: store keys and encrypt future message
+        }
+
+        return new local HttpResponseImpl(map[Pair("success", toString(success))]);
+    }
+  
+}
