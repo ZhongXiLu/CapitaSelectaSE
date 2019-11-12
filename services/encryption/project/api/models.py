@@ -6,8 +6,8 @@ class Key(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, nullable=False)
-    key = db.Column(db.String(32), nullable=False)
-    IV = db.Column(db.String(32), nullable=False)
+    key = db.Column(db.TEXT, nullable=False)
+    IV = db.Column(db.TEXT, nullable=False)
 
     def __init__(self, user_id, key, IV):
         self.user_id = user_id

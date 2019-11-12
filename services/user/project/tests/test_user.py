@@ -1,5 +1,6 @@
 import json
 import unittest
+import responses
 
 from project.tests.base import BaseTestCase
 
@@ -15,11 +16,14 @@ class TestUserService(BaseTestCase):
         self.assertIn('pong!', data['message'])
         self.assertIn('success', data['status'])
 
+    @responses.activate
     def test_preregistration(self):
         """
         Ensure the preregistration, i.e. register, update and retrieve a new user
         and also the verification of the user and their token
         """
+        responses.add(responses.POST, 'http://encryption:5000/keys', json={'status': 'success'}, status=201)
+
         with self.client:
             # Register new user
             response = self.client.post(
@@ -35,6 +39,12 @@ class TestUserService(BaseTestCase):
             self.assertIn('success', data['status'])
             self.assertIn('JohnDoe was successfully added', data['message'])
             user_id = data['user_id']
+
+            responses.add(responses.GET, f'http://encryption:5000/keys/{user_id}',
+                          json={'status': 'success', 'key': {
+                              'key': '1b7acec1675eb24d64d3497726da095b',
+                              'IV': '62743599b0b03af38cebd411cc0aa3f8'}
+                                }, status=200)
 
             # Update user
             response = self.client.put(
@@ -65,8 +75,8 @@ class TestUserService(BaseTestCase):
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 200)
             self.assertIn('success', data['status'])
-            self.assertIn('JohnDoe', data['data']['username'])
-            self.assertIn('4512018770127897', data['data']['card_number'])
+            self.assertIn('JohnDoe', data['user']['username'])
+            self.assertNotEqual('4512018770127897', data['user']['card_number'])
 
             # Verify token
             response = self.client.post(

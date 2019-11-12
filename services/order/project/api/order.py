@@ -34,7 +34,7 @@ def order_ticket():
         token = str(parameters.get('token'))
 
         # Verify user
-        response_obj = send_request('post', 'user', 'users/verify', timeout=3, json={
+        response_obj = send_request('post', 'user', 'users/verify', json={
             'user_id': user_id,
             'token': token
         })

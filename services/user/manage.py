@@ -1,8 +1,9 @@
+import base64
 import os
 import unittest
 import hashlib
-
 from flask.cli import FlaskGroup
+from Crypto.Cipher import AES
 
 from project import create_app, db
 from project.api.models import User
@@ -34,6 +35,12 @@ def test():
 def seed_db():
     """Seed the database with some default users"""
     for i in range(10000):
+        # Initialize AES
+        key = bytes.fromhex(f'100000000000000000000000000{str(10000 + i)}')
+        IV = bytes.fromhex(f'a00000000000000000000000000{str(10000 + i)}')
+        aes = AES.new(key, AES.MODE_CBC, IV)
+        pad = lambda s: s + (16 - len(s) % 16) * chr(16 - len(s) % 16)
+
         user = User(f'User{i}', hashlib.sha256(f'User{i}'.encode('utf8')).hexdigest())
         user.gender = 'M'
         user.country = 'Belgium'
@@ -41,13 +48,14 @@ def seed_db():
         user.zip_code = '2000'
         user.street = f'Keyserlei {i}'
         user.card_type = 'VISA'
-        user.card_number = f'45000000000{str((10000 + i))}'
-        user.expiration_date_month = 4
-        user.expiration_date_year = 2023
-        user.cvv = '203'
+        user.card_number = base64.b64encode(IV + aes.encrypt(pad(f'45000000000{str((10000 + i))}')))
+        user.expiration_date_month = base64.b64encode(IV + aes.encrypt(pad('4')))
+        user.expiration_date_year = base64.b64encode(IV + aes.encrypt(pad('2023')))
+        user.cvv = base64.b64encode(IV + aes.encrypt(pad('203')))
         token = str(hash(user))
         user.token = token
         db.session.add(user)
+
     db.session.commit()
 
 

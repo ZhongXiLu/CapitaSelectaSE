@@ -1,7 +1,7 @@
-import os
 from flask import Blueprint, jsonify, request
 from sqlalchemy import exc
 from requests.exceptions import RequestException
+from Crypto import Random
 
 from project.api.models import Key
 from project import db
@@ -32,8 +32,8 @@ def generate_key():
     try:
         user_id = int(parameters.get('user_id'))
 
-        new_key = os.urandom(16).hex()
-        new_IV = os.urandom(16).hex()
+        new_key = Random.new().read(16).hex()
+        new_IV = Random.new().read(16).hex()
         key = Key.query.filter_by(user_id=user_id).first()
         if not key:
             key = Key(user_id=user_id, key=new_key, IV=new_IV)

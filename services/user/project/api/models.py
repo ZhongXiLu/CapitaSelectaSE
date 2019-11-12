@@ -17,10 +17,10 @@ class User(db.Model):
     street = db.Column(db.String(128))
 
     card_type = db.Column(db.String(128))
-    card_number = db.Column(db.String(16))
-    expiration_date_month = db.Column(db.Integer)
-    expiration_date_year = db.Column(db.Integer)
-    cvv = db.Column(db.String(3))
+    card_number = db.Column(db.TEXT)
+    expiration_date_month = db.Column(db.TEXT)
+    expiration_date_year = db.Column(db.TEXT)
+    cvv = db.Column(db.TEXT)
 
     def __init__(self, username, password):
         self.username = username

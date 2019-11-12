@@ -1,6 +1,6 @@
 import os
 import unittest
-
+from Crypto import Random
 from flask.cli import FlaskGroup
 
 from project import create_app, db
@@ -32,7 +32,9 @@ def test():
 @cli.command('seed_db')
 def seed_db():
     """Seed the database with keys"""
-    # TODO: create for the first 10K user a key
+    for i in range(10000):
+        db.session.add(Key(user_id=i + 1, key=f'100000000000000000000000000{10000 + i}',
+                           IV=f'a00000000000000000000000000{10000 + i}'))
     db.session.commit()
 
 
