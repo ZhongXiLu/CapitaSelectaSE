@@ -7,6 +7,8 @@ networks:
 services:
 
   user:
+    container_name: user-service
+    image: zhongxilu/user-service:latest
     build:
       context: ./services/user
       dockerfile: Dockerfile-dev
@@ -25,11 +27,49 @@ services:
       - mynetwork
 
   user-db:
+    container_name: user-db
+    image: zhongxilu/user-db:latest
     build:
       context: ./services/user/project/db
       dockerfile: Dockerfile
     ports:
       - 5435:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - mynetwork
+
+  order:
+    container_name: order-service
+    image: zhongxilu/order-service:latest
+    build:
+      context: ./services/order
+      dockerfile: Dockerfile-dev
+    volumes:
+      - './services/order:/usr/src/app'
+    ports:
+      - 5002:5000
+    environment:
+      - FLASK_ENV=development
+      - APP_SETTINGS=project.config.DevelopmentConfig
+      - DATABASE_URL=postgres://postgres:postgres@ticket-db:5432/ticket_dev
+      - DATABASE_TEST_URL=postgres://postgres:postgres@ticket-db:5432/ticket_test
+      - NR_OF_TICKETS=350000
+      - TICKETS_PER_SHARD=1000
+    depends_on:
+      - ticket-db
+    networks:
+      - mynetwork
+
+  ticket-db:
+    container_name: ticket-db
+    image: zhongxilu/ticket-db:latest
+    build:
+      context: ./services/order/project/db
+      dockerfile: Dockerfile
+    ports:
+      - 5436:5432
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres

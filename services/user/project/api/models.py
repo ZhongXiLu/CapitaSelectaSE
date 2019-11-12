@@ -5,11 +5,11 @@ class User(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    username = db.Column(db.String(128), nullable=False)
+    username = db.Column(db.String(128), unique=True, nullable=False)
     password = db.Column(db.String(128), nullable=False)
     gender = db.Column(db.CHAR())
 
-    token = db.Column(db.String(32))
+    token = db.Column(db.String(32), unique=True)
 
     country = db.Column(db.String(128))
     city = db.Column(db.String(128))
