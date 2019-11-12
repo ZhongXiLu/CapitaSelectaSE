@@ -17,7 +17,7 @@ class Ticket:
     def to_json(self):
         return {
             'id': self.id,
-            'username': self.username,
+            'user_id': self.user_id,
             'token': self.token
         }
 

@@ -115,7 +115,7 @@ def get_single_user(user_id):
         else:
             response_object = {
                 'status': 'success',
-                'data': user.to_json()
+                'user': user.to_json()
             }
             return jsonify(response_object), 200
 

@@ -75,3 +75,37 @@ services:
       - POSTGRES_PASSWORD=postgres
     networks:
       - mynetwork
+
+  encryption:
+    container_name: encryption-service
+    image: zhongxilu/encryption-service:latest
+    build:
+      context: ./services/encryption
+      dockerfile: Dockerfile-dev
+    volumes:
+      - './services/encryption:/usr/src/app'
+    ports:
+      - 5003:5000
+    environment:
+      - FLASK_ENV=development
+      - APP_SETTINGS=project.config.DevelopmentConfig
+      - DATABASE_URL=postgres://postgres:postgres@key-db:5432/key_dev
+      - DATABASE_TEST_URL=postgres://postgres:postgres@key-db:5432/key_test
+    depends_on:
+      - key-db
+    networks:
+      - mynetwork
+
+  key-db:
+    container_name: key-db
+    image: zhongxilu/key-db:latest
+    build:
+      context: ./services/encryption/project/db
+      dockerfile: Dockerfile
+    ports:
+      - 5437:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - mynetwork
