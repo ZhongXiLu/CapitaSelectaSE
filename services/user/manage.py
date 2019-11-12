@@ -1,5 +1,6 @@
 import os
 import unittest
+import hashlib
 
 from flask.cli import FlaskGroup
 
@@ -33,7 +34,7 @@ def test():
 def seed_db():
     """Seed the database with some default users"""
     for i in range(10000):
-        user = User(f'User{i}', f'User{i}')
+        user = User(f'User{i}', hashlib.sha256(f'User{i}'.encode('utf8')).hexdigest())
         user.gender = 'M'
         user.country = 'Belgium'
         user.city = 'Antwerp'
@@ -44,6 +45,8 @@ def seed_db():
         user.expiration_date_month = 4
         user.expiration_date_year = 2023
         user.cvv = '203'
+        token = str(hash(user))
+        user.token = token
         db.session.add(user)
     db.session.commit()
 

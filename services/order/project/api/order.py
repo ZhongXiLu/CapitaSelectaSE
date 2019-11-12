@@ -38,8 +38,12 @@ def order_ticket():
             'user_id': user_id,
             'token': token
         })
-        response = response_obj.json
-        valid_token = response['data']['valid_token']
+        if response_obj.status_code == 200:
+            response = response_obj.json
+            valid_token = response['valid_token']
+        else:
+            response_object = response_obj
+            return jsonify(response_object), 400
 
         if valid_token:
             stop = False
