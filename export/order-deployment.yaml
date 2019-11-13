@@ -1,0 +1,41 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose-dev.yml -o export/
+    kompose.version: 1.17.0 (a74acad)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: order
+  name: order
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: order
+    spec:
+      containers:
+      - env:
+        - name: APP_SETTINGS
+          value: project.config.DevelopmentConfig
+        - name: DATABASE_TEST_URL
+          value: postgres://postgres:postgres@ticket-db:5432/ticket_test
+        - name: DATABASE_URL
+          value: postgres://postgres:postgres@ticket-db:5432/ticket_dev
+        - name: FLASK_ENV
+          value: development
+        - name: NR_OF_TICKETS
+          value: "350000"
+        - name: TICKETS_PER_SHARD
+          value: "1000"
+        image: zhongxilu/order-service:latest
+        name: order-service
+        ports:
+        - containerPort: 5000
+        resources: {}
+      restartPolicy: Always
+status: {}

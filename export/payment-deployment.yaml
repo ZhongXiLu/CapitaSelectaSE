@@ -1,0 +1,33 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose-dev.yml -o export/
+    kompose.version: 1.17.0 (a74acad)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: payment
+  name: payment
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: payment
+    spec:
+      containers:
+      - env:
+        - name: APP_SETTINGS
+          value: project.config.DevelopmentConfig
+        - name: FLASK_ENV
+          value: development
+        image: zhongxilu/payment-service:latest
+        name: payment-service
+        ports:
+        - containerPort: 5000
+        resources: {}
+      restartPolicy: Always
+status: {}
