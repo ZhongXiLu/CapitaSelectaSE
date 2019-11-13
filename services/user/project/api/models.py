@@ -35,6 +35,7 @@ class User(db.Model):
             'gender': self.gender,
             'token': self.token,
             'card_type': self.card_type,
+            'card_holder_name': self.card_holder_name,
             'card_number': self.card_number,
             'expiration_date_month': self.expiration_date_month,
             'expiration_date_year': self.expiration_date_year,

@@ -104,15 +104,15 @@ def update_user():
 
             # Encrypt credit card information
             aes = AES.new(key, AES.MODE_CBC, IV)
-            user.card_holder_name = base64.b64encode(IV + aes.encrypt(pad(str(parameters.get('card_holder_name')))))
+            user.card_holder_name = base64.b64encode(IV + aes.encrypt(pad(str(parameters.get('card_holder_name'))))).decode('utf-8')
             aes = AES.new(key, AES.MODE_CBC, IV)
-            user.card_number = base64.b64encode(IV + aes.encrypt(pad(str(parameters.get('card_number')))))
+            user.card_number = base64.b64encode(IV + aes.encrypt(pad(str(parameters.get('card_number'))))).decode('utf-8')
             aes = AES.new(key, AES.MODE_CBC, IV)
-            user.expiration_date_month = base64.b64encode(IV + aes.encrypt(pad(str(parameters.get('expiration_date_month')))))
+            user.expiration_date_month = base64.b64encode(IV + aes.encrypt(pad(str(parameters.get('expiration_date_month'))))).decode('utf-8')
             aes = AES.new(key, AES.MODE_CBC, IV)
-            user.expiration_date_year = base64.b64encode(IV + aes.encrypt(pad(str(parameters.get('expiration_date_year')))))
+            user.expiration_date_year = base64.b64encode(IV + aes.encrypt(pad(str(parameters.get('expiration_date_year'))))).decode('utf-8')
             aes = AES.new(key, AES.MODE_CBC, IV)
-            user.cvv = base64.b64encode(IV + aes.encrypt(pad(str(parameters.get('cvv')))))
+            user.cvv = base64.b64encode(IV + aes.encrypt(pad(str(parameters.get('cvv'))))).decode('utf-8')
 
             # Create token based on hash of User
             token = str(hash(user))

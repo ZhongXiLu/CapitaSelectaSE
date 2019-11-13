@@ -25,6 +25,7 @@ async def main():
         response_time = await order_ticket(user['id'], user['token'])
         response_times.append(response_time)
 
+    print()
     print(f'Average response time:\t{sum(response_times) / float(len(response_times))} sec')
     print(f'Shortest response time:\t{min(response_times)} sec')
     print(f'Longest response time:\t{max(response_times)} sec')
