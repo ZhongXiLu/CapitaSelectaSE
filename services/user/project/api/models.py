@@ -17,6 +17,7 @@ class User(db.Model):
     street = db.Column(db.String(128))
 
     card_type = db.Column(db.String(128))
+    card_holder_name = db.Column(db.TEXT)
     card_number = db.Column(db.TEXT)
     expiration_date_month = db.Column(db.TEXT)
     expiration_date_year = db.Column(db.TEXT)

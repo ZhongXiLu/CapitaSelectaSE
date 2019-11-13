@@ -109,3 +109,19 @@ services:
       - POSTGRES_PASSWORD=postgres
     networks:
       - mynetwork
+
+  payment:
+    container_name: payment-service
+    image: zhongxilu/payment-service:latest
+    build:
+      context: ./services/payment
+      dockerfile: Dockerfile-dev
+    volumes:
+      - './services/payment:/usr/src/app'
+    ports:
+      - 5004:5000
+    environment:
+      - FLASK_ENV=development
+      - APP_SETTINGS=project.config.DevelopmentConfig
+    networks:
+      - mynetwork

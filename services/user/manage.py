@@ -48,6 +48,7 @@ def seed_db():
         user.zip_code = '2000'
         user.street = f'Keyserlei {i}'
         user.card_type = 'VISA'
+        user.card_holder_name = base64.b64encode(IV + aes.encrypt(pad(f'User {i}')))
         user.card_number = base64.b64encode(IV + aes.encrypt(pad(f'45000000000{str((10000 + i))}')))
         user.expiration_date_month = base64.b64encode(IV + aes.encrypt(pad('4')))
         user.expiration_date_year = base64.b64encode(IV + aes.encrypt(pad('2023')))

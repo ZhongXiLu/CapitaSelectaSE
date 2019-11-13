@@ -88,13 +88,13 @@ def update_user():
             if response_obj.status_code != 200:
                 raise RequestException('Failed retrieving key for user')
 
-            # Initialize AES
+            # Initialize some AES parameters
             response_json = response_obj.json
             key = bytes.fromhex(response_json['key']['key'])
             IV = bytes.fromhex(response_json['key']['IV'])
-            aes = AES.new(key, AES.MODE_CBC, IV)
             pad = lambda s: s + (16 - len(s) % 16) * chr(16 - len(s) % 16)
 
+            # Get raw data
             user.gender = str(parameters.get('gender'))
             user.country = str(parameters.get('country'))
             user.city = str(parameters.get('city'))
@@ -103,16 +103,18 @@ def update_user():
             user.card_type = str(parameters.get('card_type'))
 
             # Encrypt credit card information
+            aes = AES.new(key, AES.MODE_CBC, IV)
+            user.card_holder_name = base64.b64encode(IV + aes.encrypt(pad(str(parameters.get('card_holder_name')))))
+            aes = AES.new(key, AES.MODE_CBC, IV)
             user.card_number = base64.b64encode(IV + aes.encrypt(pad(str(parameters.get('card_number')))))
+            aes = AES.new(key, AES.MODE_CBC, IV)
             user.expiration_date_month = base64.b64encode(IV + aes.encrypt(pad(str(parameters.get('expiration_date_month')))))
+            aes = AES.new(key, AES.MODE_CBC, IV)
             user.expiration_date_year = base64.b64encode(IV + aes.encrypt(pad(str(parameters.get('expiration_date_year')))))
+            aes = AES.new(key, AES.MODE_CBC, IV)
             user.cvv = base64.b64encode(IV + aes.encrypt(pad(str(parameters.get('cvv')))))
 
-            # unpad = lambda s: s[:-ord(s[len(s) - 1:])]
-            # card_number = base64.b64decode(user.card_number)
-            # aes = AES.new(key, AES.MODE_CBC, card_number[:16])
-            # print(unpad(aes.decrypt(card_number[16:]).decode("utf-8")))
-
+            # Create token based on hash of User
             token = str(hash(user))
             user.token = token
 

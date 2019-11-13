@@ -58,6 +58,7 @@ class TestUserService(BaseTestCase):
                     'street': 'Keyserlei 1',
                     'card_type': 'VISA',
                     'card_number': '4512018770127897',
+                    'card_holder_name': 'John Doe',
                     'expiration_date_month': 4,
                     'expiration_date_year': 2023,
                     'cvv': '203'
