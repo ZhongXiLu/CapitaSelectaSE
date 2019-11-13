@@ -91,6 +91,7 @@ class TestUserService(BaseTestCase):
             data = json.loads(response.data.decode())
             self.assertIn('success', data['status'])
             self.assertIn('JohnDoe has been verified', data['message'])
+            self.assertIn('JohnDoe', data['user']['username'])
             self.assertTrue(data['valid_token'])
 
     def test_add_user_invalid_json(self):

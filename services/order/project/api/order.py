@@ -38,9 +38,12 @@ def order_ticket():
             'user_id': user_id,
             'token': token
         })
+        valid_token = False
+        user = None
         if response_obj.status_code == 200:
             response = response_obj.json
             valid_token = response['valid_token']
+            user = response['user']
         else:
             response_object = response_obj
             return jsonify(response_object), 400
@@ -57,8 +60,21 @@ def order_ticket():
                 ticketsLeft = ticketsLeftDBs[shard_nr].query.first()
                 if ticketsLeft.count > 0:
 
-                    # TODO: contact PaymentService
+                    # Try the actual payment
+                    response_obj = send_request('post', 'payment', 'payment', json={
+                        'user_id': user['id'],
+                        'card_type': user['card_type'],
+                        'card_holder_name': user['card_holder_name'],
+                        'card_number': user['card_number'],
+                        'expiration_date_month': user['expiration_date_month'],
+                        'expiration_date_year': user['expiration_date_year'],
+                        'cvv': user['cvv'],
+                        'amount': 100
+                    })
+                    if response_obj.status_code != 201 or not response_obj.json['payment_successful']:
+                        raise RequestException(f'Failed processing the payment with {user["card_type"]}')
 
+                    # Everything went successful => create new ticket
                     ticket = ticketDBs[shard_nr](user_id, token)
                     db.session.add(ticket)
                     ticketsLeft.count -= 1

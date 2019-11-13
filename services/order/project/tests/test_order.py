@@ -8,6 +8,17 @@ from project.tests.base import BaseTestCase
 class TestOrderService(BaseTestCase):
     """Tests for the Order Service."""
 
+    # Some dummy user data to use in the tests
+    user_data = {
+        'id': 1,
+        'card_type': 'VISA',
+        'card_holder_name': 'YnQ1mbCwOvOM69QRzAqj+KzCKx69J0JzhLIyb+XeUVA=',
+        'card_number': 'YnQ1mbCwOvOM69QRzAqj+Fi5e0J7KK0RGUnSsKmyyX0ac21kvRfEcafDIfy6krB3',
+        'expiration_date_month': 'YnQ1mbCwOvOM69QRzAqj+Pt3yrjRpg7exXoJLIHJKiw=',
+        'expiration_date_year': 'YnQ1mbCwOvOM69QRzAqj+KdnlGk4qD/cclQNy1Wn0Uw=',
+        'cvv': 'YnQ1mbCwOvOM69QRzAqj+L1ssgB+BwoiZ9bZnWRaKoA='
+    }
+
     def order_ticket(self, user_id, token):
         with self.client:
             response = self.client.post(
@@ -32,7 +43,9 @@ class TestOrderService(BaseTestCase):
     def test_order(self):
         """Test an order"""
         responses.add(responses.POST, 'http://user:5000/users/verify',
-                      json={'data': {'valid_token': True}}, status=200)
+                      json={'valid_token': True, 'user': self.user_data}, status=200)
+        responses.add(responses.POST, 'http://payment:5000/payment',
+                      json={'payment_successful': True}, status=201)
 
         response = self.order_ticket(1, '123456789')
 
@@ -46,7 +59,9 @@ class TestOrderService(BaseTestCase):
     def test_out_of_order(self):
         """Test out of order scenario"""
         responses.add(responses.POST, 'http://user:5000/users/verify',
-                      json={'data': {'valid_token': True}}, status=200)
+                      json={'valid_token': True, 'user': self.user_data}, status=200)
+        responses.add(responses.POST, 'http://payment:5000/payment',
+                      json={'payment_successful': True}, status=201)
 
         for i in range(350):
             response = self.order_ticket(1, '123456789')
@@ -65,7 +80,7 @@ class TestOrderService(BaseTestCase):
     def failed_user_verification(self):
         """Test failed user verification"""
         responses.add(responses.POST, 'http://user:5000/users/verify',
-                      json={'data': {'valid_token': False}}, status=200)
+                      json={'valid_token': False, 'user': self.user_data}, status=200)
 
         response = self.order_ticket(1, '123456789')
 
@@ -73,6 +88,21 @@ class TestOrderService(BaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('success', data['status'])
         self.assertIn('User verification failed', data['message'])
+
+    @responses.activate
+    def failed_payment(self):
+        """Test failed payment"""
+        responses.add(responses.POST, 'http://user:5000/users/verify',
+                      json={'valid_token': True, 'user': self.user_data}, status=200)
+        responses.add(responses.POST, 'http://payment:5000/payment',
+                      json={'payment_successful': False}, status=201)
+
+        response = self.order_ticket(1, '123456789')
+
+        data = json.loads(response.data.decode())
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('success', data['status'])
+        self.assertIn(f'Failed processing the payment with {self.user_data["card_type"]}', data['message'])
 
 
 if __name__ == '__main__':

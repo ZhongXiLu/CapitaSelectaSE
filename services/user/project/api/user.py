@@ -189,6 +189,7 @@ def verify_user():
             response_object['status'] = 'success'
             response_object['message'] = f'{user.username} has been verified'
             response_object['valid_token'] = valid_token
+            response_object['user'] = user.to_json()    # Also return user for optimization (dont have to make another request)
             return jsonify(response_object), 200
 
     except (ValueError, RequestException) as e:
