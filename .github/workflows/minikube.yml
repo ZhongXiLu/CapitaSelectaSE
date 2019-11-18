@@ -9,11 +9,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - uses: opsgang/ga-setup-minikube@v0.1.1
-      with:
-        minikube-version: 1.4.0
-        k8s-version: 1.15.1
-    - name: Minikube start
-      run: minikube start
-    - name: Get pods
+    - name: Setup Minikube
+      id: minikube
+      uses: CodingNagger/minikube-setup-action@v1.0.2
+    - name: Launch Minikube
+      run: eval ${{ steps.minikube.outputs.launcher }}
+    - name: Wait for pods
+      uses: CodingNagger/minikube-wait-action@v1.0.1
+    - name: Check pods
       run: kubectl get pods
