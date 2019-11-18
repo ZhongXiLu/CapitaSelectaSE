@@ -13,4 +13,4 @@ jobs:
     - name: Build the Docker containers
       run: docker-compose -f docker-compose-dev.yml up -d --build
     - name: Run unit tests
-      run: ./unit_tests_,sh
+      run: ./unit_tests.sh
