@@ -12,7 +12,7 @@ jobs:
     - name: Set up Minikube
       uses: CodingNagger/minikube-setup-action@v1.0.2
     - name: Launch Minikube
-      run: minikube start --memory=8192 --cpus=4 --vm-driver=none --kubernetes-version v1.14.6 --extra-config kubeadm.ignore-preflight-errors=SystemVerification
+      run: sudo minikube start --memory=8192 --cpus=4 --vm-driver=none --kubernetes-version v1.14.6 --extra-config kubeadm.ignore-preflight-errors=SystemVerification
     - name: Set up pods
       run: kubectl create -f export/
     - name: Wait for pods
