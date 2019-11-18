@@ -16,9 +16,8 @@ jobs:
     - name: Set up pods
       run: sudo kubectl create -f export/
     - name: Wait for pods
-      uses: CodingNagger/minikube-wait-action@v1.0.1
+      uses: jakejarvis/wait-action@master
       with:
-        max-retry-attempts: 60
-        retry-delay: 60
+        time: '3m'
     - name: Check pods
       run: sudo kubectl get pods
