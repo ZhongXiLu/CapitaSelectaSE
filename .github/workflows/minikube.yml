@@ -16,4 +16,4 @@ jobs:
     - name: Set up pods
       run: sudo kubectl create -f export/
     - name: Check pods
-      run: kubectl get pods
+      run: sudo kubectl get pods
