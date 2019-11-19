@@ -18,10 +18,10 @@ jobs:
     - name: Wait for pods
       uses: jakejarvis/wait-action@master
       with:
-        time: '3m'
+        time: '1m'
     - name: Check pods
       run: sudo kubectl get pods
     - name: Set up
-      run: ./setup.sh
+      run: sudo ./setup.sh
     # - name: Run tests
     #   run: ./runAllTests.sh
