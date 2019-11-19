@@ -23,5 +23,5 @@ jobs:
       run: sudo kubectl get pods
     - name: Set up
       run: sudo ./setup.sh
-    # - name: Run tests
-    #   run: ./runAllTests.sh
+    - name: Run tests
+      run: sudo ./runAllTests.sh
