@@ -21,3 +21,7 @@ jobs:
         time: '3m'
     - name: Check pods
       run: sudo kubectl get pods
+    - name: Set up
+      run: ./setup.sh
+    # - name: Run tests
+    #   run: ./runAllTests.sh

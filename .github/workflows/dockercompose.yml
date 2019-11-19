@@ -12,5 +12,3 @@ jobs:
     - uses: actions/checkout@v1
     - name: Build the Docker containers
       run: docker-compose -f docker-compose-dev.yml up -d --build
-    - name: Run unit tests
-      run: ./unit_tests.sh
