@@ -32,9 +32,5 @@ jobs:
         architecture: 'x64'
     - name: Install Python packages
       run: pip install requests
-    - name: Set env variables
-      run: |
-        echo "::set-env name=USER_SERVICE_URL::$(sudo minikube service user --url)"
-        echo "::set-env name=ORDER_SERVICE_URL::$(sudo minikube service order --url)"
     - name: Load test
-      run: python test/load_test.py ${USER_SERVICE_URL} ${ORDER_SERVICE_URL}
+      run: python test/load_test.py http://$(sudo minikube ip)

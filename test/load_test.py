@@ -3,14 +3,13 @@ import requests
 import sys
 import time
 
-USER_SERVICE_URL = None
-ORDER_SERVICE_URL = None
+PROXY_URL = None
 
 
 async def order_ticket(user_id, token):
     """Order a ticket and return the total response time"""
     start = time.time()
-    response = requests.post(f'{ORDER_SERVICE_URL}/orders', json={'user_id': user_id, 'token': token})
+    response = requests.post(f'{PROXY_URL}:30003/orders', json={'user_id': user_id, 'token': token})
     end = time.time()
     # print("|", end="")
     return end - start
@@ -19,7 +18,7 @@ async def order_ticket(user_id, token):
 async def main():
     # Retrieve all users
     users = []
-    response = requests.get(f'{USER_SERVICE_URL}/users')
+    response = requests.get(f'{PROXY_URL}:30007/users')
     if response.status_code == 200:
         users = response.json()['data']['users']
 
@@ -36,11 +35,9 @@ async def main():
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 2:
-        USER_SERVICE_URL = sys.argv[1]
-        ORDER_SERVICE_URL = sys.argv[2]
-        print(f'USER_SERVICE_URL: {USER_SERVICE_URL}')
-        print(f'ORDER_SERVICE_URL: {ORDER_SERVICE_URL}')
+    if len(sys.argv) > 1:
+        PROXY_URL = sys.argv[1]
+        print(f'PROXY_URL: {PROXY_URL}')
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         result = loop.run_until_complete(main())
