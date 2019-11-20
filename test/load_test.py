@@ -39,8 +39,8 @@ if __name__ == '__main__':
     if len(sys.argv) > 2:
         USER_SERVICE_URL = sys.argv[1]
         ORDER_SERVICE_URL = sys.argv[2]
-        print(USER_SERVICE_URL)
-        print(ORDER_SERVICE_URL)
+        print(f'USER_SERVICE_URL: {USER_SERVICE_URL}')
+        print(f'ORDER_SERVICE_URL: {ORDER_SERVICE_URL}')
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         result = loop.run_until_complete(main())

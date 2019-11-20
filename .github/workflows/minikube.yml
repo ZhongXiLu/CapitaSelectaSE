@@ -26,12 +26,6 @@ jobs:
     - name: Set up
       run: sudo ./setup.sh
 
-    - name: Debug
-      run: |
-        sudo minikube ip
-        sudo minikube service user --url
-        sudo minikube service order --url
-
     - uses: actions/setup-python@v1
       with:
         python-version: '3.7'
@@ -39,4 +33,7 @@ jobs:
     - name: Install Python packages
       run: pip install requests
     - name: Load test
-      run: python test/load_test.py $(sudo minikube service user --url) $(sudo minikube service order --url)
+      run: python test/load_test.py ${USER_SERVICE_URL} ${ORDER_SERVICE_URL}
+      env:
+        USER_SERVICE_URL = $(sudo minikube service user --url)
+        ORDER_SERVICE_URL = $(sudo minikube service order --url)
