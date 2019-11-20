@@ -26,6 +26,12 @@ jobs:
     - name: Set up
       run: sudo ./setup.sh
 
+    - name: Debug
+      run: |
+        sudo minikube ip
+        sudo minikube service user --url
+        sudo minikube service order --url
+
     - uses: actions/setup-python@v1
       with:
         python-version: '3.7'
