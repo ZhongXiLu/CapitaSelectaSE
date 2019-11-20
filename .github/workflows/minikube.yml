@@ -35,5 +35,5 @@ jobs:
     - name: Load test
       run: python test/load_test.py ${USER_SERVICE_URL} ${ORDER_SERVICE_URL}
       env:
-        USER_SERVICE_URL = $(sudo minikube service user --url)
-        ORDER_SERVICE_URL = $(sudo minikube service order --url)
+        USER_SERVICE_URL: $(sudo minikube service user --url)
+        ORDER_SERVICE_URL: $(sudo minikube service order --url)
