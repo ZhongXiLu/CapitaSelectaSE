@@ -16,7 +16,7 @@ async def order_ticket(session, user_id, token):
         data = await response.text()
         end = time.time()
 
-        global ORDERED_TICKETS, TICKETS_TO_ORDER, RESPONSE_TIMES
+        global ORDERED_TICKETS, TICKETS_TO_ORDER
         ORDERED_TICKETS += 1
         print(f"Ordered Tickets: {ORDERED_TICKETS}/{TICKETS_TO_ORDER}", end="\r", flush=True)
 
@@ -46,3 +46,4 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         PROXY_URL = sys.argv[1]
         print(f'PROXY_URL: {PROXY_URL}')
+        asyncio.run(main())
