@@ -31,6 +31,8 @@ jobs:
         python-version: '3.7'
         architecture: 'x64'
     - name: Install Python packages
-      run: pip install requests
+      run: |
+        pip install requests
+        pip install aiohttp
     - name: Load test
       run: python test/load_test.py http://$(sudo minikube ip)
