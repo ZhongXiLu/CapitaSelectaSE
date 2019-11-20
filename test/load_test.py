@@ -12,7 +12,7 @@ TICKETS_TO_ORDER = 0
 async def order_ticket(session, user_id, token):
     """Order a ticket and return the total response time"""
     start = time.time()
-    async with session.post(f'{PROXY_URL}:30003/orders', json={'user_id': user_id, 'token': token}) as response:
+    async with session.post(f'{PROXY_URL}:30003/orders', json={'user_id': user_id, 'token': token}, timeout=None) as response:
         data = await response.text()
         end = time.time()
 

@@ -60,7 +60,7 @@ def order_ticket():
                 # EXCLUSIVE MODE = most strict, only one transaction per table
                 db.session.execute(f'LOCK TABLE "count-{shard_nr}" IN ACCESS EXCLUSIVE MODE;')
                 # Check if there are any tickets left in this shard
-                ticketsLeft = ticketsLeftDBs[shard_nr].query.with_for_update().first()
+                ticketsLeft = ticketsLeftDBs[shard_nr].query.first()
                 if ticketsLeft.count > 0:
 
                     # Try the actual payment
