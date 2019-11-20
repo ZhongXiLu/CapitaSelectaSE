@@ -21,7 +21,16 @@ jobs:
         time: '1m'
     - name: Check pods
       run: sudo kubectl get pods
-    - name: Set up
-      run: sudo ./setup.sh
     - name: Run tests
       run: sudo ./runAllTests.sh
+    - name: Set up
+      run: sudo ./setup.sh
+
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.7'
+        architecture: 'x64'
+    - name: Install Python packages
+      run: pip install requests
+    - name: Load test
+      run: python test/load_test.py $(sudo minikube service user --url) $(sudo minikube service order --url)
