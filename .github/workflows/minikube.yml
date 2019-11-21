@@ -13,7 +13,7 @@ jobs:
       uses: CodingNagger/minikube-setup-action@v1.0.2
     - name: Launch Minikube
       run: |
-        sudo minikube start --memory=8192 --cpus=4 --vm-driver=none --kubernetes-version v1.14.6
+        sudo minikube start --memory=8192 --cpus=4 --vm-driver=none --kubernetes-version v1.14.6 --extra-config kubeadm.ignore-preflight-errors=SystemVerification
         sudo minikube addons enable heapster
         sudo minikube addons enable metrics-server
     - name: Set up pods
