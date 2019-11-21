@@ -14,7 +14,8 @@ spec:
   - name: "5432"
     port: 5432
     targetPort: 5432
-    nodePort: 30002
+    # Apparently '30002' is taken by some other process
+    nodePort: 30008
   selector:
     io.kompose.service: key-db
 status:
