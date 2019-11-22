@@ -15,6 +15,8 @@ jobs:
       run: sudo minikube start --memory=8192 --cpus=4 --vm-driver=none --kubernetes-version v1.14.6 --extra-config kubeadm.ignore-preflight-errors=SystemVerification
     - name: Set up pods
       run: sudo kubectl create -f export
+    - name: Scale order service
+      run: sudo kubectl scale deployment order --replicas=10
     - name: Wait for pods
       uses: jakejarvis/wait-action@master
       with:
@@ -25,9 +27,6 @@ jobs:
       run: sudo ./runAllTests.sh
     - name: Set up
       run: sudo ./setup.sh
-
-    - name: Scale order service
-      run: sudo kubectl scale deployment order --replicas=10
 
     - uses: actions/setup-python@v1
       with:
