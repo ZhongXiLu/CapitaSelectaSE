@@ -12,11 +12,7 @@ jobs:
     - name: Set up Minikube
       uses: CodingNagger/minikube-setup-action@v1.0.2
     - name: Launch Minikube
-      run: |
-        sudo minikube addons list
-        sudo minikube addons enable heapster
-        sudo minikube addons enable metrics-server
-        sudo minikube start --memory=8192 --cpus=4 --vm-driver=none --kubernetes-version v1.14.6
+      run: sudo minikube start --memory=8192 --cpus=4 --vm-driver=none --kubernetes-version v1.14.6
     - name: Set up pods
       run: sudo kubectl create -f export
     - name: Wait for pods
@@ -30,10 +26,8 @@ jobs:
     - name: Set up
       run: sudo ./setup.sh
 
-    - name: Set autoscaler
-      run: |
-        sudo kubectl autoscale deployment order --cpu-percent=70 --min=1 --max=10
-        sudo kubectl get hpa
+    - name: Scale order service
+      run: kubectl scale deployment order --replicas=5
 
     - uses: actions/setup-python@v1
       with:
@@ -45,7 +39,3 @@ jobs:
         pip install aiohttp
     - name: Load test
       run: python test/load_test.py http://$(sudo minikube ip)
-
-    - name: Statistics
-      run: sudo kubectl get hpa
-

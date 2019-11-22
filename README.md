@@ -6,8 +6,6 @@
 
 - Set up all the pods:
 ```bash
-minikube addons enable heapster
-minikube addons enable metrics-server
 minikube start --memory=8192 --cpus=4 --vm-driver=none
 kubectl create -f export
 kubectl get pods
@@ -17,8 +15,15 @@ kubectl get pods
 
 - Scaling algorithm:
 ```bash
+minikube addons enable heapster
+minikube addons enable metrics-server
 kubectl autoscale deployment order --cpu-percent=70 --min=1 --max=10
 kubectl get hpa
+```
+
+- ...or just manual scaling:
+```bash
+kubectl scale deployment order --replicas=5
 ```
 
 - Load test (use `python3.7` or later with `requests` and `aiohttp` installed):

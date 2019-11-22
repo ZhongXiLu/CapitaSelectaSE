@@ -14,6 +14,9 @@ async def order_ticket(session, user_id, token):
     start = time.time()
     async with session.post(f'{PROXY_URL}:30003/orders', json={'user_id': user_id, 'token': token}, timeout=None) as response:
         data = await response.text()
+        if response.status != 200:
+            print(data)
+            sys.exit()
         end = time.time()
 
         global ORDERED_TICKETS, TICKETS_TO_ORDER
