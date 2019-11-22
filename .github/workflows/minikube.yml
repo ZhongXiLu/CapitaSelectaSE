@@ -27,7 +27,7 @@ jobs:
       run: sudo ./setup.sh
 
     - name: Scale order service
-      run: kubectl scale deployment order --replicas=5
+      run: sudo kubectl scale deployment order --replicas=5
 
     - uses: actions/setup-python@v1
       with:
