@@ -9,10 +9,10 @@ do
     PODS=$(kubectl get pods --all-namespaces | grep $(basename ${SERVICE})'-' | grep -v 'db-' | awk '{print $2}')
 
     # https://stackoverflow.com/a/24628676
-    SAVEIFS=$IFS   # Save current IFS
-    IFS=$' '      # Change IFS to new line
-    PODS=($PODS)   # split to array $names
-    IFS=$SAVEIFS   # Restore IFS
+    SAVEIFS=$IFS
+    IFS=$' '
+    PODS=($PODS)
+    IFS=$SAVEIFS
 
     for POD in $PODS; do
         kubectl exec -i $POD python manage.py recreate_db

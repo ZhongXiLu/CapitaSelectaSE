@@ -21,7 +21,7 @@ async def order_ticket(session, user_id, token):
 
         global ORDERED_TICKETS, TICKETS_TO_ORDER
         ORDERED_TICKETS += 1
-        print(f"Ordered Tickets: {ORDERED_TICKETS}/{TICKETS_TO_ORDER}", end="\r", flush=True)
+        # print(f"Ordered Tickets: {ORDERED_TICKETS}/{TICKETS_TO_ORDER}", end="\r", flush=True)
 
         return end - start
 
