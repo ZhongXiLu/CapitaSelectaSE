@@ -123,5 +123,6 @@ services:
     environment:
       - FLASK_ENV=development
       - APP_SETTINGS=project.config.DevelopmentConfig
+      - API_RESPONSE_TIME=1.4
     networks:
       - mynetwork

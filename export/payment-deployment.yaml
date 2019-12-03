@@ -24,6 +24,8 @@ spec:
           value: project.config.DevelopmentConfig
         - name: FLASK_ENV
           value: development
+        - name: API_RESPONSE_TIME
+          value: "1.4"
         image: zhongxilu/payment-service:latest
         name: payment-service
         ports:

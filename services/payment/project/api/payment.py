@@ -1,5 +1,6 @@
 import base64
 import time
+import os
 
 from util.send_request import send_request
 from requests.exceptions import RequestException
@@ -70,13 +71,13 @@ def create_payment():
 
         # Actual call to payment API
         if card_type == 'VISA':
-            time.sleep(1.4)     # Just "mock" for now
+            time.sleep(float(os.environ.get('API_RESPONSE_TIME')))  # Just "mock" for now
             payment_successful = True
         elif card_type == 'MasterCard':
-            time.sleep(1.4)     # Just "mock" for now
+            time.sleep(float(os.environ.get('API_RESPONSE_TIME')))  # Just "mock" for now
             payment_successful = True
         elif card_type == 'American Express':
-            time.sleep(1.4)     # Just "mock" for now
+            time.sleep(float(os.environ.get('API_RESPONSE_TIME')))  # Just "mock" for now
             payment_successful = True
         else:
             raise RequestException('Unsupported credit card type')
